@@ -1,33 +1,38 @@
 
 
+@Configuration
 @EnableWebSecurity
 public class SecurityConfig{
 	
 	@Bean
 	public SecutiryFilterChain securityFilterChain(HttpSecutiry http){
 		http
-			.builder()
+			.csrf(c -> c.disable())
+			.httpBasic(Customizer.withDefaults())
+			.sessionManagment(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.authorizeHttpRequest(http -> {
 				
-				.csrf(c -> {
-					c.disable();
-				})
-				.requestMatchers(HttpMethod.GET, "/free").allowAny()
-				.requestMatchers(HttpMethod.GET, "/secured").withRoles("DEV")
-				.anyRequest().denyAll()
+				http.requestMatchers(HttpMethod.GET, "/free").permitAll();
+				
+				http.requestMatchers(HttpMethod.GET, "/secured").withRoles("DEV");
+				
+				http.anyRequest().denyAll();
+			})
 			.build();
 	}
 	
 	@Bean
-	public AuthenticationManager authenticationManager(){
-		return new AuthenticationManager(authenticationProvider());
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration){
+		return authConfiguration.getAuthenticationManager();
 	}
 	
 	@Bean
 	public AuthenticationProvider authenticationProvider(){
 		
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetails(userDetailsService());
+		authProvider.setUserDetailsService(userDetailsService());
 		authProvider.setPasswordEncoder(passwordEncoder());
+		return authProvider;
 	}
 	
 	@Bean
@@ -37,40 +42,37 @@ public class SecurityConfig{
 		List<UserDetails> users = new ArrayList<>();
 		
 		users.add(
-			UserDetails
-				.builder()
+			User
 				.withUsername("u1")
-				.withPassword("1")
-				.withRoles("USER")
-				.withPermissions({"READ"})
-				.build()
+				.password("1")
+				.roles("USER")
+				.permissions("READ")
+			.build()
 		);
 		
 		users.add(
-			UserDetails
-				.builder()
+			User
 				.withUsername("u2")
-				.withPassword("2")
-				.withRoles("ADMIN")
-				.withPermissions({"READ", "WRITE"})
-				.build()
+				.password("2")
+				.roles("ADMIN")
+				.permissions("READ", "WRITE")
+			.build()
 		);
 		
 		users.add(
-			UserDetails
-				.builder()
+			User
 				.withUsername("me")
-				.withPassword("changeme")
-				.withRoles({"TESTER", "DEV"})
-				.withPermissions({"WRITE", "READ", "REFACTOR"})
-				.build()
+				.password("changeme")
+				.roles("TESTER", "DEV")
+				.authorities("WRITE", "READ", "REFACTOR")
+			.build()
 		);
 		
-		return new InMemoryUserDetailsService(users);
+		return new InMemoryUserDetailsManager(users);
 	}
 	
 	@Bean
 	public PasswordEncoder passwordEncoder(){
-		return new OpPasswordEncoder(); //No encrypted password just for testing!!
+		return NoOpPasswordEncoder.getInstance(); //No encrypted password just for testing!!
 	}
 }
