@@ -12,4 +12,9 @@ public class Controller{
 	public ResponseEntity<?> securedAccess(){
 		return ResponseEntity.ok("Open secured access");
 	}
+	
+	@GetMapping("/no-action")
+	public ResponseEntity<?> noAction(){
+		return ResponseEntity.ok("No security tracking");
+	}
 }

@@ -7,10 +7,13 @@ public class SecurityConfig{
 	public SecutiryFilterChain securityFilterChain(HttpSecutiry http){
 		http
 			.builder()
-			
+				
 				.csrf(c -> {
 					c.disable();
 				})
+				.requestMatchers(HttpMethod.GET, "/free").allowAny()
+				.requestMatchers(HttpMethod.GET, "/secured").withRoles("DEV")
+				.anyRequest().denyAll()
 			.build();
 	}
 	
@@ -36,8 +39,8 @@ public class SecurityConfig{
 		users.add(
 			UserDetails
 				.builder()
-				.withUsername("me")
-				.withPassword("changeme")
+				.withUsername("u1")
+				.withPassword("1")
 				.withRoles("USER")
 				.withPermissions({"READ"})
 				.build()
@@ -46,8 +49,8 @@ public class SecurityConfig{
 		users.add(
 			UserDetails
 				.builder()
-				.withUsername("you")
-				.withPassword("yours")
+				.withUsername("u2")
+				.withPassword("2")
 				.withRoles("ADMIN")
 				.withPermissions({"READ", "WRITE"})
 				.build()
