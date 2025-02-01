@@ -11,7 +11,7 @@ public class BackendApplication {
 	}
 
 	@Bean
-	public CommandLineRunner init(){
+	public CommandLineRunner init(UserRepository userRepo){
 		
 		return args -> {
 			//Create and pre-load test entities on DB
