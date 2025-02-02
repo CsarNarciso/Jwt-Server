@@ -83,4 +83,9 @@ public class BackendApplication {
 			userRepo.saveAll(users);
 		}
 	}
+	
+	@Bean
+	public ModelMapper modelMapper(){
+		return new ModelMapper();
+	}
 }

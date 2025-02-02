@@ -27,48 +27,12 @@ public class SecurityConfig{
 	}
 	
 	@Bean
-	public AuthenticationProvider authenticationProvider(){
+	public AuthenticationProvider authenticationProvider(UserDetailServiceImpl userDetailsServiceImpl){
 		
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService());
+		authProvider.setUserDetailsService(userDetailsServiceImpl);
 		authProvider.setPasswordEncoder(passwordEncoder());
 		return authProvider;
-	}
-	
-	@Bean
-	public UserDetailsService userDetailsService(){
-		
-		//Create in memory users for testing
-		List<UserDetails> users = new ArrayList<>();
-		
-		users.add(
-			User
-				.withUsername("u1")
-				.password("1")
-				.roles("USER")
-				.permissions("READ")
-			.build()
-		);
-		
-		users.add(
-			User
-				.withUsername("u2")
-				.password("2")
-				.roles("ADMIN")
-				.permissions("READ", "WRITE")
-			.build()
-		);
-		
-		users.add(
-			User
-				.withUsername("me")
-				.password("changeme")
-				.roles("TESTER", "DEV")
-				.authorities("WRITE", "READ", "REFACTOR")
-			.build()
-		);
-		
-		return new InMemoryUserDetailsManager(users);
 	}
 	
 	@Bean
