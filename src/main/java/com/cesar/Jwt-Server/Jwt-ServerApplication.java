@@ -61,6 +61,9 @@ public class BackendApplication {
 			};
 			List<UserEntity> users = new ArrayList<>();
 			
+			//Create PasswordEncoder to create passwords
+			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+			
 			//For each username
 			for(int i = 0; i < usernames.length(); i++){
 				
@@ -68,7 +71,7 @@ public class BackendApplication {
 				UserEntity user = UserEntity
 							.builder()
 									.username(usernames.get(i))
-									.password("changeme")
+									.password(passwordEncoder.encode("changeme"))
 									.isEnabled(true)
 									.isAccountNoExpired(false)
 									.isAccountNoLocked(false)

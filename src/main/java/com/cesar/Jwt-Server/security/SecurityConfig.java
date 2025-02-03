@@ -37,6 +37,6 @@ public class SecurityConfig{
 	
 	@Bean
 	public PasswordEncoder passwordEncoder(){
-		return NoOpPasswordEncoder.getInstance(); //No encrypted password just for testing!!
+		return new BCryptPasswordEncoder();
 	}
 }
