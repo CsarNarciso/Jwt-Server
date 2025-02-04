@@ -3,18 +3,28 @@
 @RestController
 public class Controller{
 	
-	@GetMapping("/free")
-	public ResponseEntity<?> freeAccess(){
-		return new ResponseEntity.ok("Free access");
+	@GetMapping("/get")
+	public ResponseEntity<?> get(){
+		return new ResponseEntity.ok("GET");
 	}
 	
-	@GetMapping("/secured")
-	public ResponseEntity<?> securedAccess(){
-		return ResponseEntity.ok("Open secured access");
+	@PostMapping("/post")
+	public ResponseEntity<?> post(){
+		return ResponseEntity.ok("POST");
 	}
 	
-	@GetMapping("/no-action")
-	public ResponseEntity<?> noAction(){
-		return ResponseEntity.ok("No security tracking");
+	@PutMapping("/put")
+	public ResponseEntity<?> put(){
+		return ResponseEntity.ok("PUT");
+	}
+	
+	@PatchMapping("/patch")
+	public ResponseEntity<?> patch(){
+		return ResponseEntity.ok("PATCH");
+	}
+	
+	@DeleteMapping("/delete")
+	public ResponseEntity<?> delete(){
+		return ResponseEntity.ok("DELETE");
 	}
 }

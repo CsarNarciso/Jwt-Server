@@ -12,9 +12,15 @@ public class SecurityConfig{
 			.sessionManagment(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequest(http -> {
 				
-				http.requestMatchers(HttpMethod.GET, "/free").permitAll();
+				http.requestMatchers(HttpMethod.GET, "/get").permitAll();
 				
-				http.requestMatchers(HttpMethod.GET, "/secured").withRoles("DEV");
+				http.requestMatchers(HttpMethod.POST, "/post").hasAuthority("WRITE");
+				
+				http.requestMatchers(HttpMethod.PUT, "/put").hasAnyRole("DEV", "ADMIN");
+				
+				http.requestMatchers(HttpMethod.PATCH, "/patch").hasAnyAuthority("UPDATE", "REFACTOR");
+				
+				http.requestMatchers(HttpMethod.DELETE, "/delete").hasRole(RoleEnum.ADMIN);
 				
 				http.anyRequest().denyAll();
 			})
