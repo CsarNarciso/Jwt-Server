@@ -42,12 +42,16 @@ public class JwtUtils{
 		}
 	}
 	
-	public void getSpecificClaim(String clainName){
-		
+	public String extractUsername(DecodedJWT decodedToken){
+		return decodedToken.getSubject().toString();
 	}
 	
-	public void getAllClaims(){
-		
+	public Claim getSpecificClaim(DecodedJWT decodedToken, String clainName){
+		return decodedToken.getClaim(clainName);
+	}
+	
+	public Map<String, Claim> getAllClaims(DecodedJWT decodedToken){
+		return decodedToken.getClaims();
 	}
 	
 	
