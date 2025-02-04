@@ -26,8 +26,20 @@ public class JwtUtils{
 			.sign(algorithm);
 	}
 	
-	public void validToken(DecodedJwt decodedJwt){
+	public DecodedJWT validateToken(String token){
 		
+		try{
+			
+			JWTVerifier verifier = JWT.require(algorithm)
+							.withIssuer(issuer)
+							.build();
+							
+			//Get decoded Jwt token if successful veirfication
+			return verifier.verify(token);
+			
+		} catch(JWTVerificationException ex){
+			throw new JWTVerificationException("Token invalid. No authorization.");
+		}
 	}
 	
 	public void getSpecificClaim(String clainName){
