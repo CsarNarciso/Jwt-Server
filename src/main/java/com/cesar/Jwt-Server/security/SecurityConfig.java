@@ -2,6 +2,7 @@
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig{
 	
 	@Bean
@@ -12,17 +13,11 @@ public class SecurityConfig{
 			.sessionManagment(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequest(http -> {
 				
-				http.requestMatchers(HttpMethod.GET, "/get").permitAll();
-				
-				http.requestMatchers(HttpMethod.POST, "/post").hasAuthority("WRITE");
-				
-				http.requestMatchers(HttpMethod.PUT, "/put").hasAnyRole("DEV", "ADMIN");
+				http.requestMatchers(HttpMethod.PUT, "/put").;
 				
 				http.requestMatchers(HttpMethod.PATCH, "/patch").hasAnyAuthority("UPDATE", "REFACTOR");
 				
 				http.requestMatchers(HttpMethod.DELETE, "/delete").hasRole(RoleEnum.ADMIN);
-				
-				http.anyRequest().denyAll();
 			})
 			.build();
 	}
