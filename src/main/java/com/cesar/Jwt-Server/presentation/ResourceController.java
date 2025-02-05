@@ -2,7 +2,8 @@ package com.cesar.Jwt-Server.presentation;
 
 @RestController
 @PreAuthorize("denyAll()")
-public class Controller{
+@RequestMapping("/resource")
+public class ResourceController{
 	
 	@GetMapping("/get")
 	@PreAuthorize("permitAll()")
