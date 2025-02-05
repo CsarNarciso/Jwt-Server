@@ -13,11 +13,13 @@ public class SecurityConfig{
 			.sessionManagment(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequest(http -> {
 				
-				http.requestMatchers(HttpMethod.PUT, "/put").;
-				
+				//Http endpoints for resource operations
 				http.requestMatchers(HttpMethod.PATCH, "/patch").hasAnyAuthority("UPDATE", "REFACTOR");
 				
 				http.requestMatchers(HttpMethod.DELETE, "/delete").hasRole(RoleEnum.ADMIN);
+				
+				//For auth operations
+				http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
 			})
 			.addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
 			.build();
