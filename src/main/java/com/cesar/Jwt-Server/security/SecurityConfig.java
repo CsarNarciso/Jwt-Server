@@ -19,6 +19,7 @@ public class SecurityConfig{
 				
 				http.requestMatchers(HttpMethod.DELETE, "/delete").hasRole(RoleEnum.ADMIN);
 			})
+			.addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
 			.build();
 	}
 	
@@ -40,4 +41,13 @@ public class SecurityConfig{
 	public PasswordEncoder passwordEncoder(){
 		return new BCryptPasswordEncoder();
 	}
+	
+	
+	
+	
+	public SecurityConfig(JwtUtils jwtUtils){
+		this.jwtUtils = jwtUtils;
+	}
+	
+	private final JwtUtils jwtUtils;
 }
