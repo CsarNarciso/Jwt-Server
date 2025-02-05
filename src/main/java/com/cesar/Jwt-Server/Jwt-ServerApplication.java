@@ -61,7 +61,7 @@ public class BackendApplication {
 			};
 			List<UserEntity> users = new ArrayList<>();
 			
-			//Create PasswordEncoder to create passwords
+			//Create PasswordEncoder to encode passwords
 			BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 			
 			//For each username
