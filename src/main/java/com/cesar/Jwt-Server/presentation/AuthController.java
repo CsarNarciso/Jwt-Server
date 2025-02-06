@@ -12,6 +12,13 @@ public class AuthController{
 				.body(userDetailsServiceImpl.login(loginRequest));
 	}
 	
+	@PostMapping("/signup")
+	public ResponseEntity<?> signup(@RequestBody SignUpRequest signupRequest){
+		return ResponseEntity
+				.status(HttpStatus.CREATED)
+				.body(userDetailsServiceImpl.signup(signupRequest));
+	}
+	
 	public AuthController(UserDetailServiceImpl userDetailsServiceImpl){
 		this.userDetailsServiceImpl = userDetailsServiceImpl;
 	}

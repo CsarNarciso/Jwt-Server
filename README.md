@@ -67,4 +67,19 @@ controller method returns this token
 if not succesfful auth (no existent user, bad credentials), throw BadCredentialsException("message")
 Configure in security config auth controller operations as permitall
 
+For sign up method
+create post signup auth controller method , receives user credetnials and a list of the role names they want
+to be associated to
+create repo for role entity, method findRoleEntitiesByNameIn(List<String> roleNames) to filter only the existent 
+roles in db from the list of role names the user sent on request (to filter no existent roles)
+create signup method in service, receives user credentials and role names
+get user data and roles with the role entity previos created method to filter no existing ones (if role list
+emppty after filtering, we can throw illegalargument exception)
+if at least one role, create user entity and save it on db
+Once it is allocated on db, try to authenticate with the previos coded authenticate method to search the user
+in db, and auth with username and password, if successful, we get auth object
+generate and return jwt token with it
+return the token on the controller method response 
+
+
 
