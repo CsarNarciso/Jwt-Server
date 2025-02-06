@@ -52,4 +52,19 @@ request, first the jwt toekn sent on the bearer request header, if valid, it aut
 security context holder, then, the BasicAuthenticationFilter verifies this and can give succesfful access to the
 next filters because the user is already authenticated. 
 
+Create authController class for auth operations (log in and sign up)
+POST login() receives as request body the user credentials (username, password), the response contains jwt token if
+successful auth
+we call service method for login (we can place it in userdetailserviceimpl class)
+login method receives the credentials and with them calls authenticate by username and password method (we can place
+it in the same service too), wich receives the credentials, search the user in the db (with the already overrided
+loadbyusernameandpassword method) and if user exists and decoded encoded password (from the user detials object)
+matchs the sent credentials password, it's successful authentication and we authenticate the user in the security 
+context holder, then return the authentication object 
+(usernamePasswordAuthenticationToken(username, null password, user.getPermissions()))
+If successful auth, login method calls jwtUtils.createToken(received auth object) and return the jwt token
+controller method returns this token
+if not succesfful auth (no existent user, bad credentials), throw BadCredentialsException("message")
+Configure in security config auth controller operations as permitall
+
 
