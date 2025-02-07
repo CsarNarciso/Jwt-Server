@@ -78,6 +78,8 @@ emppty after filtering, we can throw illegalargument exception)
 if at least one role, create user entity and save it on db
 Once it is allocated on db, try to authenticate with the previos coded authenticate method to search the user
 in db, and auth with username and password, if successful, we get auth object
+remember that for each authentication object, we need the authorities (a set of grantedSimpleAuthority) where a
+role has to be concatenated with ROLE_+roleName and a permission only the name
 generate and return jwt token with it
 return the token on the controller method response 
 
