@@ -12,23 +12,29 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		//If user exists
 		UserEntity entity = userOptional.get();
 		
-		//Extract their roles and roles' permissions as Spring Security authorities
+		//Map entity and authorities to Spring Secutiry User (from UserDetails)
+		User user = mapper.map(entity, User.class);
+		
+		//Extract their roles and permissions as Spring Security authorities
+		user.setAuthorities(getAuthoritiesFromRoles(entity.getRoles()));
+		
+		return user;
+	}
+	
+	public void getAuthoritiesFromRoles(Set<RoleEntity> roles){
+		
 		Set<SimpleGrandAuthority> authorities = new ArrayList<>();
 
 		//Roles
-		entity.getRoles()
+		roles
 			.forEach(role -> authorities.add(new SimpleGrandAuthority("ROLE_".concat(role.name()))));
 			
 		//Permissions
-		entity.getRoles().stream()
+		roles.stream()
 				.flatMap(role -> role.getPermissions().stream())
 				.forEach(permission -> authorities.add(new SimpleGrandAuthority(permission.getName())));
-		
-		//Map entity and authorities to Spring Secutiry User (from UserDetails)
-		User user = mapper.map(entity, User.class);
-		user.setAuthorities(authorities);
-		
-		return user;
+				
+		return authorities;
 	}
 	
 	public Authentication authenticateByUsernameAndPassword(String username, String password){
