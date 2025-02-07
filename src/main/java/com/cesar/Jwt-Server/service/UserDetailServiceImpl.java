@@ -64,7 +64,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		return jwtUtils.createToken(authenticateByUsernameAndPassword(username, password));
 	}
 	
-	public String signup(SignUpRequest signupRequest){
+	public SignUpResponse signup(SignUpRequest signupRequest){
 		
 		//Get user data
 		String username = signupRequest.getUsername();
@@ -80,11 +80,11 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		//Create and save new user in DB
 		userService.create(username, password, roles);
 		
-		//Try to authenticate
-		Authentication authentication = authenticateByUsernameAndPassword(username, password);
-		
-		//If successful, generate Jwt Token as response
-		return jwtUtils.createToken(authentication);
+		return SignUpResponse
+				.builder()
+					.username(username)
+					.created(true)
+				.build();
 	}
 	
 	
