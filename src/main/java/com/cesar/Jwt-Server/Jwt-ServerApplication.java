@@ -11,7 +11,7 @@ public class BackendApplication {
 	}
 
 	@Bean
-	public CommandLineRunner init(UserRepository userRepo){
+	public CommandLineRunner init(UserService userService){
 		
 		return args -> {
 			//Create and pre-load test entities on DB
@@ -53,7 +53,7 @@ public class BackendApplication {
 			});
 			
 			//USERS
-			Set<String> usernames = Set.of("Juan12", "Maria54", "PedroGarcia");
+			Set<String> usernames = Set.of("juan12", "maria54", "pedroGarcia");
 			String[][] userRoles = {
 				{RoleEnum.USER, RoleEnum.GUEST},
 				{RoleEnum.ADMIN},
@@ -68,22 +68,11 @@ public class BackendApplication {
 			for(int i = 0; i < usernames.length(); i++){
 				
 				//create new entity
-				UserEntity user = UserEntity
-							.builder()
-									.username(usernames.get(i))
-									.password(passwordEncoder.encode("changeme"))
-									.isEnabled(true)
-									.isAccountNoExpired(false)
-									.isAccountNoLocked(false)
-									.isCredentialNoExpired(false)
-									.roles(userRoles[i].asSet())
-								.build();
+				UserEntity user = userService.create(usernames[i], passwords[i], userRoles[i].asSet());
 				users.add(user);			
 			}
-			
-			
-			//Save on DB
-			userRepo.saveAll(users);
+			//Save all users (along with their roles and permissions: cascade) on DB
+			userService.saveAll(users);
 		}
 	}
 	

@@ -1,7 +1,7 @@
 package com.cesar.Jwt-Server.service;
 
 @Service
-public class UserService{
+public class UserService {
 	
 	public UserEntity create(String username, String password, Set<RoleEntity> roles){
 		return repo.save(
@@ -16,6 +16,18 @@ public class UserService{
 				.roles(roles)
 				.build()
 		);
+	}
+	
+	public UserEntity save(UserEntity entity){
+		return repo.save(entity);
+	}
+	
+	public void saveAll(List<UserEntity> entities){
+		repo.saveAll(entities);
+	}
+	
+	public UserEntity createAndSave(String username, String password, Set<RoleEntity> roles){
+		return save(create(username, password, roles));
 	}
 	
 	public Optional<UserEntity> getByUsername(String username){

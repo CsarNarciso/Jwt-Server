@@ -78,7 +78,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		}
 		
 		//Create and save new user in DB
-		userService.create(username, password, roles);
+		userService.createAndSave(username, password, roles);
 		
 		return SignUpResponse
 				.builder()
