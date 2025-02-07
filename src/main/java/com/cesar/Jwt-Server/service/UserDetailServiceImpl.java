@@ -71,7 +71,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		String password = signupRequest.getPassword();
 		
 		//Get roles entities (only existing ones on DB) based on request role names
-		Set<RoleEntity> roles = roleRepo.findRoleEntitiesByNameIn(signupRequest.getRoleNames()).asSet();
+		Set<RoleEntity> roles = roleService.getRoleEntitiesByNames(signupRequest.getRoleNames()).asSet();
 		
 		if(roles.isEmpty()){
 			throw new IllegalArgumentException("Only avaliable existing role names")
@@ -90,16 +90,17 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	
 	
 	
-	public UserDetailServiceImpl(UserService userService, RoleRepository roleRepo, ModelMapper mapper, JwtUtils jwtUtils){
+	public UserDetailServiceImpl(UserService userService, RoleService roleService, ModelMapper mapper, JwtUtils jwtUtils){
 		this.userService = userService;
-		this.roleRepo = roleRepo;
+		this.roleService = roleService;
 		this.mapper = mapper;
 		this.jwtUtils = jwtUtils;
 		this.passwordEncoder = new PasswordEncoder();
 	}
 	
 	
-	private final RoleRepository roleRepo;
+	private final UserService userService;
+	private final RoleService roleService;
 	private final JwtUtils jwtUtils;
 	private final PasswordEncoder passwordEncoder;
 	private final ModelMapper mapper;
