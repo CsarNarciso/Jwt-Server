@@ -6,7 +6,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
-		Optional<UserEntity> userOptional = userRepo.findByUsername(username)
+		Optional<UserEntity> userOptional = userService.getByUsername(username)
 						.orElseThrow(() -> new UsernameNotFoundException); 
 		
 		//If user exists
@@ -71,24 +71,14 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		String password = signupRequest.getPassword();
 		
 		//Get roles entities (only existing ones on DB) based on request role names
-		List<RoleEntity> roles = roleRepo.findRoleEntitiesByNameIn(signupRequest.getRoleNames());
+		Set<RoleEntity> roles = roleRepo.findRoleEntitiesByNameIn(signupRequest.getRoleNames()).asSet();
 		
 		if(roles.isEmpty()){
 			throw new IllegalArgumentException("Only avaliable existing role names")
 		}
 		
 		//Create and save new user in DB
-		UserEntity userEntity = UserEntity
-				.builder()
-					.username(username)
-					.password(passwordEncoder.encode(password))
-					.isEnabled(true)
-					.isAccountNoExpired(true)
-					.isAccountNoLocked(true)
-					.isCredentialNoExpired(true)
-					.roles(roles.asSet())
-				.build();
-		userEntity = userRepo.save(userEntity);
+		userService.create(username, password, roles);
 		
 		//Try to authenticate
 		Authentication authentication = authenticateByUsernameAndPassword(username, password);
@@ -100,15 +90,15 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	
 	
 	
-	public UserDetailServiceImpl(UserRepository userRepo, RoleRepository roleRepo, ModelMapper mapper, JwtUtils jwtUtils){
-		this.userRepo = userRepo;
+	public UserDetailServiceImpl(UserService userService, RoleRepository roleRepo, ModelMapper mapper, JwtUtils jwtUtils){
+		this.userService = userService;
 		this.roleRepo = roleRepo;
 		this.mapper = mapper;
 		this.jwtUtils = jwtUtils;
 		this.passwordEncoder = new PasswordEncoder();
 	}
 	
-	private final UserRepository userRepo;
+	
 	private final RoleRepository roleRepo;
 	private final JwtUtils jwtUtils;
 	private final PasswordEncoder passwordEncoder;
