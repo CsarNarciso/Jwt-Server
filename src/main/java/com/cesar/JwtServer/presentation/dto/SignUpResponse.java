@@ -1,4 +1,6 @@
-package com.cesar.Jwt-Server.presentation.dto;
+package com.cesar.JwtServer.presentation.dto;
+
+import lombok.Builder;
 
 @Builder
 public class SignUpResponse {

@@ -1,4 +1,4 @@
-package com.cesar.Jwt-Server.presentation.dto;
+package com.cesar.JwtServer.presentation.dto;
 
 public record LogInRequest(
 	String username,

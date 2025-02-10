@@ -1,4 +1,4 @@
-package com.cesar.Jwt-Server.persistence.entity;
+package com.cesar.JwtServer.persistence.entity;
 
 public enum RoleEnum{
 	GUEST,

@@ -1,4 +1,15 @@
-package com.cesar.Jwt-Server.service;
+package com.cesar.JwtServer.service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.cesar.JwtServer.persistence.entity.RoleEntity;
+import com.cesar.JwtServer.persistence.entity.UserEntity;
+import com.cesar.JwtServer.persistence.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -10,9 +21,9 @@ public class UserService {
 				.username(username)
 				.password(passwordEncoder.encode(password))
 				.isEnabled(true)
-				.isAccountNoExpired(true)
-				.isAccountNoLocked(true)
-				.isCredentialNoExpired(true)
+				.accountNoExpired(true)
+				.accountNoLocked(true)
+				.credentialNoExpired(true)
 				.roles(roles)
 				.build()
 		);
@@ -37,9 +48,9 @@ public class UserService {
 	
 	public UserService(UserRepository repo){
 		this.repo = repo;
-		this.passwordEncoder = new PasswordEncoder();
+		this.passwordEncoder = new BCryptPasswordEncoder();
 	}
 	
 	private final UserRepository repo;
-	private final PasswordEncoder passwordEncoder;
+	private final BCryptPasswordEncoder passwordEncoder;
 }
