@@ -84,6 +84,7 @@ Once it is allocated on db, do not authenticate nor return jwt token, you can do
 two follow when registering an user: two steps signup, when you register and then sign in, or one step, when you 
 register and automatically are authetnicated, so you are usually redirected to the next protected resource, wich
 now you have access to
+
 In this case, we are going to use two steps sign up
 so, just return the username of the created user and a boolean of created or not
 
