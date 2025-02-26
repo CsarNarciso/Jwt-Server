@@ -74,13 +74,13 @@ public class JwtUtils{
 	
 	
 	
-	public JwtUtils(){
-		this.algorithm = Algorithm.HMAC256(secret);
+	public JwtUtils(@Value("${jwt.secret}") String secret){
+		this.secret = secret;
+		this.algorithm = Algorithm.HMAC256(this.secret);
 	}
 	
 	
-	@Value("${jwt.secret}")
-	private String secret;
+	private final String secret;
 	
 	@Value("${jwt.issuer}")
 	private String issuer;
