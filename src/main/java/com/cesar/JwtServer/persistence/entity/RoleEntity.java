@@ -1,6 +1,5 @@
 package com.cesar.JwtServer.persistence.entity;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -36,9 +35,11 @@ public class RoleEntity{
 	@Enumerated(EnumType.STRING)
 	private RoleEnum name;
 	
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinTable(name = "roles_permissions", 
-		joinColumns = @JoinColumn(name = "role_id"), 
-		inverseJoinColumns = @JoinColumn(name = "permission_id"))
-	Set<PermissionEntity> permissions = new HashSet<>();
+	@ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinTable(
+        name = "role_permissions",
+        joinColumns = @JoinColumn(name = "role_id"),
+        inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+	Set<PermissionEntity> permissions;
 }

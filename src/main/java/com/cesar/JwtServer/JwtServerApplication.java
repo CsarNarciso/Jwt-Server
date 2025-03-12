@@ -7,7 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.cesar.JwtServer.persistence.repository.UserRepository;
+import com.cesar.JwtServer.service.RoleService;
+import jakarta.persistence.EntityManager;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -18,7 +22,10 @@ import com.cesar.JwtServer.persistence.entity.PermissionEntity;
 import com.cesar.JwtServer.persistence.entity.RoleEntity;
 import com.cesar.JwtServer.persistence.entity.RoleEnum;
 import com.cesar.JwtServer.persistence.entity.UserEntity;
+import com.cesar.JwtServer.persistence.repository.PermissionRepository;
+import com.cesar.JwtServer.persistence.repository.RoleRepository;
 import com.cesar.JwtServer.service.UserService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
 public class JwtServerApplication {
@@ -81,6 +88,7 @@ public class JwtServerApplication {
 			userService.saveAll(users);
 		};
 	}
+
 
 	@Bean
 	ModelMapper modelMapper() {
