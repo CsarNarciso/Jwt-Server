@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.cesar.JwtServer.persistence.repository.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -48,18 +49,25 @@ public class JwtServerApplication {
 
 			// ROLES
 			Map<String, RoleEntity> roles = new HashMap<>();
-			PermissionEntity[][] rolePermissions = {
-					{ permissions.get("READ") },
-					{ permissions.get("READ"), permissions.get("WRITE") },
-					{ permissions.get("READ"), permissions.get("WRITE"), permissions.get("DELETE") },
-					{ permissions.get("READ"), permissions.get("WRITE"), permissions.get("DELETE"), permissions.get("REFACTOR") } };
+			String[][] rolePermissionNames = {
+					{ "READ" },
+					{ "READ", "WRITE" },
+					{ "READ", "WRITE", "DELETE" },
+					{ "READ", "WRITE", "DELETE", "REFACTOR" }
+			};
 
 			// For each role name,
 			for (int i = 0; i < RoleEnum.values().length; i++) {
 
-				// create new entity
-				RoleEntity role = RoleEntity.builder().name(RoleEnum.values()[i])
-						.permissions(new HashSet<>(Arrays.asList(rolePermissions[i]))).build();
+				//Get new role permission entities and create role
+				RoleEntity role = RoleEntity.builder()
+						.name(RoleEnum.values()[i])
+						.permissions(
+								Arrays.stream(rolePermissionNames[i])
+										.map(permissions::get)
+								.collect(Collectors.toSet()))
+						.build();
+
 				roles.put(RoleEnum.values()[i].name(), role);
 			}
 
