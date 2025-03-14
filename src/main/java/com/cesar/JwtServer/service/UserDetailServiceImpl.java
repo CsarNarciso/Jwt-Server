@@ -1,8 +1,11 @@
 package com.cesar.JwtServer.service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.cesar.JwtServer.persistence.repository.RoleRepository;
+import com.cesar.JwtServer.persistence.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +32,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
-		UserEntity entity = userService.getByUsername(username)
+		UserEntity entity = userRepo.findByUsername(username)
 						.orElseThrow(() -> new UsernameNotFoundException(username)); 
 		
 		//If user exists
@@ -93,14 +96,24 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		String password = signupRequest.password();
 		
 		//Get roles entities (only existing ones on DB) based on request role names
-		Set<RoleEntity> roles = new HashSet<>(roleService.getRoleEntitiesByNames(signupRequest.roleNames()));
+		Set<RoleEntity> roles = new HashSet<>(roleRepo.findRoleEntitiesByNameIn(signupRequest.roleNames()));
 		
 		if(roles.isEmpty()){
 			throw new IllegalArgumentException("Only avaliable existing role names");
 		}
 		
 		//Create and save new user in DB
-		userService.createAndSave(username, password, roles);
+		UserEntity user = UserEntity.builder()
+				.username(username)
+				.password(passwordEncoder.encode(password))
+				.isEnabled(true)
+				.accountNoExpired(true)
+				.accountNoLocked(true)
+				.credentialNoExpired(true)
+				.roles(roles)
+			.build();
+
+		userRepo.save(user);
 		
 		return SignUpResponse
 				.builder()
@@ -112,17 +125,17 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	
 	
 	
-	public UserDetailServiceImpl(UserService userService, RoleService roleService, ModelMapper mapper, JwtUtils jwtUtils){
-		this.userService = userService;
-		this.roleService = roleService;
+	public UserDetailServiceImpl(UserRepository userRepo, RoleRepository roleRepo, ModelMapper mapper, JwtUtils jwtUtils){
+		this.userRepo = userRepo;
+		this.roleRepo = roleRepo;
 		this.mapper = mapper;
 		this.jwtUtils = jwtUtils;
 		this.passwordEncoder = new BCryptPasswordEncoder();
 	}
 	
 	
-	private final UserService userService;
-	private final RoleService roleService;
+	private final UserRepository userRepo;
+	private final RoleRepository roleRepo;
 	private final JwtUtils jwtUtils;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final ModelMapper mapper;
