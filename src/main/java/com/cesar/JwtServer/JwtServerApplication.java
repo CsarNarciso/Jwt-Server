@@ -7,11 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.cesar.JwtServer.persistence.repository.UserRepository;
-import com.cesar.JwtServer.service.RoleService;
-import jakarta.persistence.EntityManager;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -22,9 +19,6 @@ import com.cesar.JwtServer.persistence.entity.PermissionEntity;
 import com.cesar.JwtServer.persistence.entity.RoleEntity;
 import com.cesar.JwtServer.persistence.entity.RoleEnum;
 import com.cesar.JwtServer.persistence.entity.UserEntity;
-import com.cesar.JwtServer.persistence.repository.PermissionRepository;
-import com.cesar.JwtServer.persistence.repository.RoleRepository;
-import com.cesar.JwtServer.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
@@ -35,16 +29,16 @@ public class JwtServerApplication {
 	}
 
 	@Bean
-	public CommandLineRunner init(UserService userService) {
+	public CommandLineRunner init(UserRepository userRepo, final BCryptPasswordEncoder passwordEncoder) {
 
 		return args -> {
-			// Create and pre-load test entities on DB
+			// Create and preload test entities on DB
 
 			// PERMISSIONS
 			Set<String> permissionNames = Set.of("READ", "WRITE", "DELETE", "REFACTOR");
 			Map<String, PermissionEntity> permissions = new HashMap<>();
 
-			// For each permission namen
+			// For each permission name
 			permissionNames.forEach(name -> {
 
 				// create new entity
@@ -54,11 +48,11 @@ public class JwtServerApplication {
 
 			// ROLES
 			Map<String, RoleEntity> roles = new HashMap<>();
-			PermissionEntity[][] rolePermissions = { { permissions.get("READ") },
+			PermissionEntity[][] rolePermissions = {
+					{ permissions.get("READ") },
 					{ permissions.get("READ"), permissions.get("WRITE") },
 					{ permissions.get("READ"), permissions.get("WRITE"), permissions.get("DELETE") },
-					{ permissions.get("READ"), permissions.get("WRITE"), permissions.get("DELETE"),
-							permissions.get("REFACTOR") } };
+					{ permissions.get("READ"), permissions.get("WRITE"), permissions.get("DELETE"), permissions.get("REFACTOR") } };
 
 			// For each role name,
 			for (int i = 0; i < RoleEnum.values().length; i++) {
@@ -68,7 +62,6 @@ public class JwtServerApplication {
 						.permissions(new HashSet<>(Arrays.asList(rolePermissions[i]))).build();
 				roles.put(RoleEnum.values()[i].name(), role);
 			}
-			;
 
 			// USERS
 			String[] usernames = { "juan12", "maria54", "pedroGarcia" };
@@ -80,12 +73,19 @@ public class JwtServerApplication {
 			for (int i = 0; i < usernames.length; i++) {
 
 				// create new entity
-				UserEntity user = userService.create(usernames[i], "letmein",
-						new HashSet<>(Arrays.asList(userRoles[i])));
+				UserEntity user = UserEntity.builder()
+						.username(usernames[i])
+						.password(passwordEncoder.encode("letmein"))
+						.isEnabled(true)
+						.accountNoExpired(true)
+						.accountNoLocked(true)
+						.credentialNoExpired(true)
+						.roles(new HashSet<>(Arrays.asList(userRoles[i])))
+						.build();
 				users.add(user);
 			}
 			// Save all users (along with their roles and permissions: cascade) on DB
-			userService.saveAll(users);
+			userRepo.saveAll(users);
 		};
 	}
 
