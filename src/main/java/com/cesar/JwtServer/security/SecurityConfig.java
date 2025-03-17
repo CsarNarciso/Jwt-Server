@@ -33,13 +33,18 @@ public class SecurityConfig {
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(request -> {
 
-					// Http endpoints for resource operations
-					request.requestMatchers(HttpMethod.PATCH, "/patch").hasAnyAuthority("UPDATE", "REFACTOR");
+					// R addesource operations
+					request.requestMatchers(HttpMethod.POST, "/resource/post").hasAuthority("WRITE");
 
-					request.requestMatchers(HttpMethod.DELETE, "/delete").hasRole(RoleEnum.ADMIN.name());
+					request.requestMatchers(HttpMethod.PUT, "/resource/put").hasAnyRole("DEV", "ADMIN");
 
-					// For auth operations
-					request.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
+					request.requestMatchers(HttpMethod.PATCH, "/resource/patch").hasAnyAuthority("UPDATE", "REFACTOR");
+
+					request.requestMatchers(HttpMethod.DELETE, "/resource/delete").hasRole(RoleEnum.ADMIN.name());
+
+					// For auth operations and resource get method
+					request.anyRequest().permitAll();
+
 				}).addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class).build();
 	}
 
