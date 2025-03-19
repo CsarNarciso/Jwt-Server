@@ -99,7 +99,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		Set<RoleEntity> roles = new HashSet<>(roleRepo.findRoleEntitiesByNameIn(signupRequest.roleNames()));
 		
 		if(roles.isEmpty()){
-			throw new IllegalArgumentException("Only avaliable existing role names");
+			throw new IllegalArgumentException("Only available existing role names");
 		}
 		
 		//Create and save new user in DB

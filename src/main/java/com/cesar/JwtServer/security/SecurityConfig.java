@@ -33,7 +33,7 @@ public class SecurityConfig {
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(request -> {
 
-					// R addesource operations
+					// Resource operations
 					request.requestMatchers(HttpMethod.POST, "/resource/post").hasAuthority("WRITE");
 
 					request.requestMatchers(HttpMethod.PUT, "/resource/put").hasAnyRole("DEV", "ADMIN");
