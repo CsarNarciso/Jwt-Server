@@ -3,6 +3,7 @@ package com.cesar.JwtServer.service;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.cesar.JwtServer.persistence.repository.RoleRepository;
 import com.cesar.JwtServer.persistence.repository.UserRepository;
@@ -10,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -37,13 +39,17 @@ public class UserDetailServiceImpl implements UserDetailsService {
 		
 		//If user exists
 		
-		//Map entity and authorities to Spring Secutiry User (from UserDetails)
-		User user = mapper.map(entity, User.class);
-		
-		//Extract their roles and permissions as Spring Security authorities
-		user.getAuthorities().addAll(getAuthoritiesFromRoles(entity.getRoles()));
-		
-		return user;
+		//Convert entity and authorities to Spring Security objects (UserDetails and GrantedAuthorities)
+
+        return new User(
+                entity.getUsername(),
+                entity.getPassword(),
+                entity.isEnabled(),
+                entity.isAccountNoExpired(),
+                entity.isCredentialNoExpired(),
+                entity.isAccountNoLocked(),
+                getAuthoritiesFromRoles(entity.getRoles())
+        );
 	}
 	
 	public Set<SimpleGrantedAuthority> getAuthoritiesFromRoles(Set<RoleEntity> roles){
