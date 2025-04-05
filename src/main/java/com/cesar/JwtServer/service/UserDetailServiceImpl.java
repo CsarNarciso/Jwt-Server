@@ -71,9 +71,9 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	public Authentication authenticateByUsernameAndPassword(String username, String password){
 		
 		UserDetails user = loadUserByUsername(username);
-		
+
 		//If user exists (correct credentials)
-		if(user!=null && passwordEncoder.matches(user.getPassword(), password)){
+		if(user!=null && passwordEncoder.matches(password, user.getPassword())){
 			
 			//Authenticate user in Security context
 			Authentication authentication = new 
