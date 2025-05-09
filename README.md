@@ -1,10 +1,10 @@
-First, we create a spring boot project with spring security dependency
+First, create a new Spring Boot project with 'Spring Security' dependency.
 
-Then, create a class for spring secutiry config with the following annotations
+Then, create a class for Spring Secutiry config with the following annotations:
 @configuration
 @EnableWebSecurity
 
-Inside, we have the following beans methods
+Inside, declare the following beans (@Bean):
 SecurityFilterChain
 AuthenticationManager
 AuthenticationProvider - DaoAuthenticationProvider for DB integration 
@@ -12,15 +12,12 @@ UserDetailsService
 PasswordEncoder - NoOpPasswordEncoder for no encryptation (just for tests! Don't do this in prod)
 				BCryptPasswordEncoder for encrypted passwords.
 
-We include auth0 java-jwt dependency (from JWT.io guides for java integration), following 
-the github link to the oficial documentation for more details.
+Include 'auth0 java-jwt' dependency (found at JWT.io guides for java integration). 
+Follow the GitHub link to the oficial documentation for more details: https://github.com/auth0/java-jwt
 
-Generate encrypted secret for our jwt utils class. Put it in .properties or yml file
-The same for the issuer token generator name: you can use the name of your app/backend
-(who generates the token) here
-Create /util/JwtUtils class
+Generate encrypted secret to be used by the JWT utils class to sign and verify tokens integrity. Store the secret in the .properties or .yaml file. And the same for the issuer token generator (who generates the token) name: you can use the name of your App/Backend.
 
-and create the following methods
+Create '/util/JwtUtils' class and create the following methods
 
 createToken
 validate
@@ -85,8 +82,7 @@ two follow when registering an user: two steps signup, when you register and the
 register and automatically are authetnicated, so you are usually redirected to the next protected resource, wich
 now you have access to
 
-In this case, we are going to use two steps sign up
-so, just return the username of the created user and a boolean of created or not
+In this case, we are using two steps sign up process, so, just return the created user's username and a boolean indicating if it was created or not.
 
 
 
