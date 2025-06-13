@@ -6,13 +6,18 @@ import com.cesar.JwtServer.persistence.entity.RoleEnum;
 import com.cesar.JwtServer.persistence.entity.UserEntity;
 import com.cesar.JwtServer.persistence.repository.RoleRepository;
 import com.cesar.JwtServer.persistence.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Component
 public class DatabaseDataPreLoadingUtils {
 
+    @Transactional
     public void initDefaultPermissionsAndRoles() {
 
         // Pre-load default application' permissions and roles entities on DB
@@ -33,11 +38,13 @@ public class DatabaseDataPreLoadingUtils {
         roleRepo.saveAll(roles.values());
     }
 
+    @Transactional
     public void initTestUsers() {
         // Pre-load test users
-        UserEntity user = buildUser("user", Set.of(roles.get(RoleEnum.USER)));
-        UserEntity admin = buildUser("admin", Set.of(roles.get(RoleEnum.ADMIN)));
-        userRepo.saveAll(List.of(user, admin));
+        RoleEntity role = roleRepo.findById(roles.get(RoleEnum.USER).getId()).orElse(null);
+        UserEntity user = buildUser("user", Set.of(role));
+        //UserEntity admin = buildUser("admin", Set.of(roles.get(RoleEnum.ADMIN)));
+        userRepo.saveAll(List.of(user));
     }
 
 
@@ -50,28 +57,25 @@ public class DatabaseDataPreLoadingUtils {
         roles.put(name, RoleEntity.builder().name(name).permissions(permissions).build());
     }
 
-    private UserEntity buildUser(String username, Set<RoleEntity> roles) {
+    private UserEntity buildUser(String username, Set<RoleEntity> r) {
         return UserEntity
                 .builder()
                 .username(username)
                 .password(passwordEncoder.encode("letmein"))
-                .isEnabled(true)
-                .accountNoExpired(true)
-                .accountNoLocked(true)
-                .credentialNoExpired(true)
-                .roles(roles)
+                .roles(r)
                 .build();
     }
 
 
 
-    public DatabaseDataPreLoadingUtils(BCryptPasswordEncoder passwordEncoder, RoleRepository roleRepo, UserRepository userRepo) {
-        this.passwordEncoder = passwordEncoder;
+    public DatabaseDataPreLoadingUtils(RoleRepository roleRepo, UserRepository userRepo) {
         this.roleRepo = roleRepo;
         this.userRepo = userRepo;
+        passwordEncoder = new BCryptPasswordEncoder();
+        roles = new HashMap<>();
     }
-    private final BCryptPasswordEncoder passwordEncoder;
     private final RoleRepository roleRepo;
     private final UserRepository userRepo;
+    private final BCryptPasswordEncoder passwordEncoder;
     private Map<RoleEnum, RoleEntity> roles;
 }
