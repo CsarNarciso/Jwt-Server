@@ -14,9 +14,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.Set;
 
+@Service
 public class AuthService {
 
     public String login(LogInRequest loginRequest){
@@ -45,10 +47,6 @@ public class AuthService {
         UserEntity user = UserEntity.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
-                .isEnabled(true)
-                .accountNoExpired(true)
-                .accountNoLocked(true)
-                .credentialNoExpired(true)
                 .roles(roles)
                 .build();
 

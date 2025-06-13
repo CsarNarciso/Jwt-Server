@@ -2,7 +2,6 @@ package com.cesar.JwtServer.persistence.entity;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,18 +34,6 @@ public class UserEntity{
 	@Column(unique = true)
 	private String username;
 	private String password;
-	
-	@Column(name = "is_enabled")
-	private boolean isEnabled;
-	
-	@Column(name = "account_no_expired")
-	private boolean accountNoExpired;
-	
-	@Column(name = "account_no_locked")
-	private boolean accountNoLocked;
-	
-	@Column(name = "credential_no_expired")
-	private boolean credentialNoExpired;
 	
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "users_roles", 

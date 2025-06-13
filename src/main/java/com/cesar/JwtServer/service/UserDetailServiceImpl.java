@@ -25,10 +25,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
         return new User(
                 foundUser.getUsername(),
                 foundUser.getPassword(),
-                foundUser.isEnabled(),
-                foundUser.isAccountNoExpired(),
-                foundUser.isCredentialNoExpired(),
-                foundUser.isAccountNoLocked(),
                 getAuthoritiesFromRoles(foundUser.getRoles())
         );
 	}
