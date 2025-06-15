@@ -1,18 +1,17 @@
 package com.cesar.JwtServer.util;
 
-import com.cesar.JwtServer.persistence.entity.PermissionEntity;
-import com.cesar.JwtServer.persistence.entity.RoleEntity;
-import com.cesar.JwtServer.persistence.entity.RoleEnum;
-import com.cesar.JwtServer.persistence.entity.UserEntity;
+import com.cesar.JwtServer.persistence.entity.*;
 import com.cesar.JwtServer.persistence.repository.RoleRepository;
 import com.cesar.JwtServer.persistence.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.cesar.JwtServer.persistence.entity.PermissionEnum.*;
+import static com.cesar.JwtServer.persistence.entity.RoleEnum.*;
 
 @Component
 public class DatabaseDataPreLoadingUtils {
@@ -23,33 +22,36 @@ public class DatabaseDataPreLoadingUtils {
         // Pre-load default application' permissions and roles entities on DB
 
         // PERMISSIONS
-        PermissionEntity read = buildPermission("READ");
-        PermissionEntity write = buildPermission("WRITE");
-        PermissionEntity delete = buildPermission("DELETE");
-        PermissionEntity refactor = buildPermission("REFACTOR");
+        PermissionEntity read = buildPermission(READ);
+        PermissionEntity write = buildPermission(WRITE);
+        PermissionEntity delete = buildPermission(DELETE);
+        PermissionEntity refactor = buildPermission(REFACTOR);
 
         // ROLES
-        buildRole(RoleEnum.GUEST, Set.of(read));
-        buildRole(RoleEnum.USER, Set.of(read, write));
-        buildRole(RoleEnum.ADMIN, Set.of(read, write, delete));
-        buildRole(RoleEnum.DEVELOPER, Set.of(read, write, delete, refactor));
+        buildRole(USER, Set.of(read, write));
+        buildRole(ADMIN, Set.of(read, write, delete, refactor));
 
         //Save all roles (along with their permissions: cascade ALL) on DB
         roleRepo.saveAll(roles.values());
     }
 
     @Transactional
-    public void initTestUsers() {
-        // Pre-load test users
-        RoleEntity role = roleRepo.findById(roles.get(RoleEnum.USER).getId()).orElse(null);
-        UserEntity user = buildUser("user", Set.of(role));
-        //UserEntity admin = buildUser("admin", Set.of(roles.get(RoleEnum.ADMIN)));
-        userRepo.saveAll(List.of(user));
+    public void initTestUser() {
+        // Preload test user
+        UserEntity user = buildUser("user", "password", Set.of(roles.get(RoleEnum.USER)));
+        userRepo.save(user);
+    }
+
+    @Transactional
+    public void initAdmins() {
+        // Preload default admins
+        UserEntity admin = buildUser("admin", "letmein", Set.of(roles.get(RoleEnum.ADMIN)));
+        userRepo.save(admin);
     }
 
 
 
-    private PermissionEntity buildPermission(String name) {
+    private PermissionEntity buildPermission(PermissionEnum name) {
         return PermissionEntity.builder().name(name).build();
     }
 
@@ -57,11 +59,11 @@ public class DatabaseDataPreLoadingUtils {
         roles.put(name, RoleEntity.builder().name(name).permissions(permissions).build());
     }
 
-    private UserEntity buildUser(String username, Set<RoleEntity> r) {
+    private UserEntity buildUser(String username, String password, Set<RoleEntity> r) {
         return UserEntity
                 .builder()
                 .username(username)
-                .password(passwordEncoder.encode("letmein"))
+                .password(passwordEncoder.encode(password))
                 .roles(r)
                 .build();
     }
@@ -77,5 +79,5 @@ public class DatabaseDataPreLoadingUtils {
     private final RoleRepository roleRepo;
     private final UserRepository userRepo;
     private final BCryptPasswordEncoder passwordEncoder;
-    private Map<RoleEnum, RoleEntity> roles;
+    private final Map<RoleEnum, RoleEntity> roles;
 }

@@ -18,9 +18,13 @@ public class JwtServerApplication {
 	@Bean
 	public CommandLineRunner init() {
 		return args -> {
+
 			// Pre-load database data
 			databaseDataPreLoadingUtils.initDefaultPermissionsAndRoles();
-			databaseDataPreLoadingUtils.initTestUsers();
+			databaseDataPreLoadingUtils.initAdmins();
+
+			//Optional, preload test user (for dev testing)
+			databaseDataPreLoadingUtils.initTestUser();
 		};
 	}
 
