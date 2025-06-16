@@ -1,13 +1,16 @@
 package com.cesar.JwtServer.service;
 
+import com.cesar.JwtServer.persistence.entity.RoleEntity;
 import com.cesar.JwtServer.persistence.entity.UserEntity;
-import com.cesar.JwtServer.persistence.repository.RoleRepository;
 import com.cesar.JwtServer.persistence.repository.UserRepository;
 import com.cesar.JwtServer.presentation.dto.LogInRequest;
 import com.cesar.JwtServer.presentation.dto.SignUpRequest;
 import com.cesar.JwtServer.presentation.dto.SignUpResponse;
+import com.cesar.JwtServer.util.AuthorityUtils;
 import com.cesar.JwtServer.util.JwtUtils;
-import com.cesar.JwtServer.util.RoleUtils;
+import com.cesar.JwtServer.util.UserUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,13 +23,14 @@ import java.util.Set;
 @Service
 public class AuthService {
 
-    public String login(LogInRequest loginRequest){
+    public ResponseEntity<String> login(LogInRequest loginRequest){
 
         String username = loginRequest.username();
         String password = loginRequest.password();
 
         //Generate Jwt token if successful authentication
-        return jwtUtils.createToken(authenticateByUsernameAndPassword(username, password));
+        String token = jwtUtils.createToken(authenticateByUsernameAndPassword(username, password));
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, token).body("Successfully authenticated!");
     }
 
     public SignUpResponse signup(SignUpRequest signupRequest){
@@ -36,12 +40,8 @@ public class AuthService {
         String password = signupRequest.password();
 
         //Create and save new user in DB
-        UserEntity user = UserEntity.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .roles(Set.of(roleUtils.getUserRole()))
-                .build();
-
+        RoleEntity userRole = authorityUtils.getUserRole();
+        UserEntity user = userUtils.buildUser(username, password, Set.of(userRole));
         userRepo.save(user);
 
         return SignUpResponse
@@ -71,18 +71,18 @@ public class AuthService {
 
 
 
-    public AuthService(UserDetailServiceImpl userDetailService, UserRepository userRepo, RoleRepository roleRepo, JwtUtils jwtUtils, RoleUtils roleUtils){
+    public AuthService(UserDetailServiceImpl userDetailService, UserRepository userRepo, UserUtils userUtils, JwtUtils jwtUtils, AuthorityUtils authorityUtils){
         this.userDetailService = userDetailService;
         this.userRepo = userRepo;
-        this.roleRepo = roleRepo;
+        this.userUtils = userUtils;
         this.jwtUtils = jwtUtils;
-        this.roleUtils = roleUtils;
+        this.authorityUtils = authorityUtils;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
     private final UserDetailServiceImpl userDetailService;
     private final UserRepository userRepo;
-    private final RoleRepository roleRepo;
+    private final UserUtils userUtils;
     private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final RoleUtils roleUtils;
+    private final AuthorityUtils authorityUtils;
 }
