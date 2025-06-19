@@ -9,8 +9,6 @@ import com.cesar.JwtServer.presentation.dto.SignUpResponse;
 import com.cesar.JwtServer.util.AuthorityUtils;
 import com.cesar.JwtServer.util.JwtUtils;
 import com.cesar.JwtServer.util.UserUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,14 +21,13 @@ import java.util.Set;
 @Service
 public class AuthService {
 
-    public ResponseEntity<String> login(LogInRequest loginRequest){
+    public String login(LogInRequest loginRequest){
 
         String username = loginRequest.username();
         String password = loginRequest.password();
 
         //Generate Jwt token if successful authentication
-        String token = jwtUtils.createToken(authenticateByUsernameAndPassword(username, password));
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, token).body("Successfully authenticated!");
+        return jwtUtils.createToken(authenticateByUsernameAndPassword(username, password));
     }
 
     public SignUpResponse signup(SignUpRequest signupRequest){

@@ -1,9 +1,12 @@
 package com.cesar.JwtServer.security.filter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
-import org.springframework.http.HttpHeaders;
+import com.cesar.JwtServer.exception.NoAuthenticatedException;
+import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,42 +25,54 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtTokenValidator extends OncePerRequestFilter {
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
-
-		String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-		if (jwtToken != null) {
-
-			// Get token without Bearer prefix
-			jwtToken = jwtToken.substring(7);
-
-			// Validate token (break point here: if not valid, it will throw exception)
-			DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken);
-
-			// If valid
-			String username = jwtUtils.extractUsername(decodedToken);
-
-			String authoritiesAsString = jwtUtils.getSpecificClaim(decodedToken, "authorities").asString();
-			Collection<? extends GrantedAuthority> authorities = AuthorityUtils
-					.commaSeparatedStringToAuthorityList(authoritiesAsString);
-
-			// Authenticate
-			SecurityContext context = SecurityContextHolder.getContext();
-
-			Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
-			context.setAuthentication(authentication);
-
-			SecurityContextHolder.setContext(context);
-		}
-		// Continue filter chain
-		filterChain.doFilter(request, response);
-	}
+	private final List<String> EXCLUDED_PATHS =List.of("/auth/login", "/auth/register");
+	private final JwtUtils jwtUtils;
 
 	public JwtTokenValidator(JwtUtils jwtUtils) {
 		this.jwtUtils = jwtUtils;
 	}
 
-	private final JwtUtils jwtUtils;
+
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+
+		// Do not filter for not allowed paths
+		if(isExcluded(request.getServletPath())){
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		Cookie[] cookies = request.getCookies();
+		Cookie tokenCookie = Arrays.stream(cookies).filter(c -> c.getName().equals("token"))
+				.findFirst().orElseThrow(() -> new NoAuthenticatedException("Missing access token"));
+
+		String jwtToken = tokenCookie.getName();
+
+		// Validate token (break point here: if not valid, it will throw exception)
+		DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken);
+
+		// If valid
+		String username = jwtUtils.extractUsername(decodedToken);
+
+		String authoritiesAsString = jwtUtils.getSpecificClaim(decodedToken, "authorities").asString();
+		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
+				.commaSeparatedStringToAuthorityList(authoritiesAsString);
+
+		// Authenticate
+		SecurityContext context = SecurityContextHolder.getContext();
+
+		Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+		context.setAuthentication(authentication);
+
+		SecurityContextHolder.setContext(context);
+
+		// Continue filter chain
+		filterChain.doFilter(request, response);
+	}
+
+
+	private boolean isExcluded(String path){
+		return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
+	}
 }
