@@ -1,5 +1,6 @@
 package com.cesar.JwtServer.security;
 
+import com.cesar.JwtServer.persistence.entity.PermissionEnum;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,15 +35,17 @@ public class SecurityConfig {
 				.authorizeHttpRequests(request -> {
 
 					// Resource operations
-					request.requestMatchers(HttpMethod.POST, "/resource/post").hasAuthority("WRITE");
+					request.requestMatchers(HttpMethod.GET, "/resource/get").hasAuthority(PermissionEnum.READ.name());
 
-					request.requestMatchers(HttpMethod.PUT, "/resource/put").hasAnyRole("DEV", "ADMIN");
+					request.requestMatchers(HttpMethod.POST, "/resource/post").hasAuthority(PermissionEnum.WRITE.name());
 
-					request.requestMatchers(HttpMethod.PATCH, "/resource/patch").hasAnyAuthority("UPDATE", "REFACTOR");
+					request.requestMatchers(HttpMethod.PUT, "/resource/put").hasRole(RoleEnum.ADMIN.name());
+
+					request.requestMatchers(HttpMethod.PATCH, "/resource/patch").hasRole(RoleEnum.ADMIN.name());
 
 					request.requestMatchers(HttpMethod.DELETE, "/resource/delete").hasRole(RoleEnum.ADMIN.name());
 
-					// For auth operations and resource get method
+					// For auth operations
 					request.anyRequest().permitAll();
 
 				}).addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class).build();
