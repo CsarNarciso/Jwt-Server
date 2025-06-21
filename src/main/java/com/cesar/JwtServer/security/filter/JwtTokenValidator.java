@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import com.cesar.JwtServer.exception.NoAuthenticatedException;
 import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,10 +13,8 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cesar.JwtServer.util.JwtUtils;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,7 +44,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		Cookie tokenCookie = Arrays.stream(cookies).filter(c -> c.getName().equals("token"))
 				.findFirst().orElseThrow(() -> new NoAuthenticatedException("Missing access token"));
 
-		String jwtToken = tokenCookie.getName();
+		String jwtToken = tokenCookie.getValue();
 
 		// Validate token (break point here: if not valid, it will throw exception)
 		DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken);
@@ -55,6 +52,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		// If valid
 		String username = jwtUtils.extractUsername(decodedToken);
 
+		// Get authorities
 		String authoritiesAsString = jwtUtils.getSpecificClaim(decodedToken, "authorities").asString();
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
 				.commaSeparatedStringToAuthorityList(authoritiesAsString);

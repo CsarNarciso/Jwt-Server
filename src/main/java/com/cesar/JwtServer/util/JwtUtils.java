@@ -1,15 +1,12 @@
 package com.cesar.JwtServer.util;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -19,7 +16,16 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 
 @Component
 public class JwtUtils{
-	
+
+	private final String issuer;
+	private final Algorithm algorithm;
+
+	public JwtUtils(@Value("${jwt.secret}") String secret, @Value("${jwt.issuer}") String issuer){
+		this.algorithm = Algorithm.HMAC256(secret);
+		this.issuer = issuer;
+	}
+
+
 	public String createToken(Authentication authentication){
 		
 		//Get current authenticated user username
@@ -51,39 +57,19 @@ public class JwtUtils{
 							.withIssuer(issuer)
 							.build();
 							
-			//Get decoded Jwt token if successful veirfication
+			//Get decoded Jwt token if successful verification
 			return verifier.verify(token);
 			
 		} catch(JWTVerificationException ex){
-			throw new JWTVerificationException("Token invalid. No authorization.");
+			throw new JWTVerificationException("Invalid token. No authenticated: " + ex.getMessage());
 		}
 	}
 	
 	public String extractUsername(DecodedJWT decodedToken){
-		return decodedToken.getSubject().toString();
+		return decodedToken.getSubject();
 	}
 	
-	public Claim getSpecificClaim(DecodedJWT decodedToken, String clainName){
-		return decodedToken.getClaim(clainName);
+	public Claim getSpecificClaim(DecodedJWT decodedToken, String claimName){
+		return decodedToken.getClaim(claimName);
 	}
-	
-	public Map<String, Claim> getAllClaims(DecodedJWT decodedToken){
-		return decodedToken.getClaims();
-	}
-	
-	
-	
-	
-	public JwtUtils(@Value("${jwt.secret}") String secret){
-		this.secret = secret;
-		this.algorithm = Algorithm.HMAC256(this.secret);
-	}
-	
-	
-	private final String secret;
-	
-	@Value("${jwt.issuer}")
-	private String issuer;
-	
-	private final Algorithm algorithm;
 }
