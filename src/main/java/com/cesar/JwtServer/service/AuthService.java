@@ -1,5 +1,6 @@
 package com.cesar.JwtServer.service;
 
+import com.cesar.JwtServer.persistence.entity.JwtTokenType;
 import com.cesar.JwtServer.persistence.entity.RoleEntity;
 import com.cesar.JwtServer.persistence.entity.UserEntity;
 import com.cesar.JwtServer.persistence.repository.UserRepository;
@@ -26,8 +27,8 @@ public class AuthService {
         String username = loginRequest.username();
         String password = loginRequest.password();
 
-        //Generate Jwt token if successful authentication
-        return jwtUtils.createToken(authenticateByUsernameAndPassword(username, password));
+        //Generate access token if successful auth
+        return jwtUtils.createToken(authenticateByUsernameAndPassword(username, password), JwtTokenType.ACCESS);
     }
 
     public SignUpResponse signup(SignUpRequest signupRequest){
@@ -39,11 +40,11 @@ public class AuthService {
         //Create and save new user in DB
         RoleEntity userRole = authorityUtils.getUserRole();
         UserEntity user = userUtils.buildUser(username, password, Set.of(userRole));
-        userRepo.save(user);
+        user = userRepo.save(user);
 
         return SignUpResponse
                 .builder()
-                .username(username)
+                .username(user.getUsername())
                 .created(true)
                 .build();
     }

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import com.cesar.JwtServer.exception.NoAuthenticatedException;
+import com.cesar.JwtServer.persistence.entity.JwtTokenType;
 import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,7 +48,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		String jwtToken = tokenCookie.getValue();
 
 		// Validate token (break point here: if not valid, it will throw exception)
-		DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken);
+		DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken, JwtTokenType.ACCESS);
 
 		// If valid
 		String username = jwtUtils.extractUsername(decodedToken);
