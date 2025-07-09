@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtTokenValidator extends OncePerRequestFilter {
 
-	private final List<String> EXCLUDED_PATHS =List.of("/auth/login", "/auth/register");
+	private final List<String> EXCLUDED_PATHS =List.of("/auth/login", "/auth/register", "/h2-console");
 	private final JwtUtils jwtUtils;
 
 	public JwtTokenValidator(JwtUtils jwtUtils) {
@@ -42,32 +42,36 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		}
 
 		Cookie[] cookies = request.getCookies();
-		Cookie tokenCookie = Arrays.stream(cookies).filter(c -> c.getName().equals("token"))
-				.findFirst().orElseThrow(() -> new NoAuthenticatedException("Missing access token"));
 
-		String jwtToken = tokenCookie.getValue();
+		if(cookies != null && cookies.length > 0) {
 
-		// Validate token (break point here: if not valid, it will throw exception)
-		DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken, JwtTokenType.ACCESS);
+			Cookie tokenCookie = Arrays.stream(cookies).filter(c -> c.getName().equals("token"))
+					.findFirst().orElseThrow(() -> new NoAuthenticatedException("Missing access token"));
 
-		// If valid
-		String username = jwtUtils.extractUsername(decodedToken);
+			String jwtToken = tokenCookie.getValue();
 
-		// Get authorities
-		String authoritiesAsString = jwtUtils.getSpecificClaim(decodedToken, "authorities").asString();
-		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
-				.commaSeparatedStringToAuthorityList(authoritiesAsString);
+			// Validate token (break point here: if not valid, it will throw exception)
+			DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken, JwtTokenType.ACCESS);
 
-		// Authenticate
-		SecurityContext context = SecurityContextHolder.getContext();
+			// If valid
+			String username = jwtUtils.extractUsername(decodedToken);
 
-		Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
-		context.setAuthentication(authentication);
+			// Get authorities
+			String authoritiesAsString = jwtUtils.getSpecificClaim(decodedToken, "authorities").asString();
+			Collection<? extends GrantedAuthority> authorities = AuthorityUtils
+					.commaSeparatedStringToAuthorityList(authoritiesAsString);
 
-		SecurityContextHolder.setContext(context);
+			// Authenticate
+			SecurityContext context = SecurityContextHolder.getContext();
 
-		// Continue filter chain
-		filterChain.doFilter(request, response);
+			Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+			context.setAuthentication(authentication);
+
+			SecurityContextHolder.setContext(context);
+
+			// Continue filter chain
+			filterChain.doFilter(request, response);
+		}
 	}
 
 

@@ -14,12 +14,18 @@ import com.cesar.JwtServer.persistence.entity.UserEntity;
 
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
-	
+
+	private final UserService userService;
+
+	public UserDetailServiceImpl(UserService userService){
+		this.userService = userService;
+	}
+
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
-		UserEntity foundUser = userRepo.findByUsername(username)
-						.orElseThrow(() -> new UsernameNotFoundException(username)); 
+		UserEntity foundUser = userService.loadByUsername(username);
 
 		//Convert entity and authorities to Spring Security objects (UserDetails and GrantedAuthorities)
         return new User(
@@ -27,6 +33,16 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 foundUser.getPassword(),
                 getAuthoritiesFromRoles(foundUser.getRoles())
         );
+	}
+
+	public UserDetails mapUserEntityToUserDetails(UserEntity entity) {
+
+		//Convert entity and authorities to Spring Security objects (UserDetails and GrantedAuthorities)
+		return new User(
+				entity.getUsername(),
+				entity.getPassword(),
+				getAuthoritiesFromRoles(entity.getRoles())
+		);
 	}
 
 	private Set<SimpleGrantedAuthority> getAuthoritiesFromRoles(Set<RoleEntity> roles){
@@ -44,11 +60,4 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
 		return authorities;
 	}
-
-
-
-	public UserDetailServiceImpl(UserRepository userRepo){
-		this.userRepo = userRepo;
-	}
-	private final UserRepository userRepo;
 }
