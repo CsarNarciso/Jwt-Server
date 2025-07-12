@@ -42,22 +42,11 @@ public class AuthController{
 		return ResponseEntity.status(HttpStatus.OK).body("Successfully authenticated!");
 	}
 
-	/*@PostMapping("/refresh")
+	@PostMapping("/refresh")
 	public ResponseEntity<?> refresh(HttpServletRequest req, HttpServletResponse res) {
-
-		// Try to get request cookie with refresh token
-		Cookie[] cookies = req.getCookies();
-
-		Cookie refreshCookie = Arrays.stream(cookies)
-				.filter(c -> c.getName().equals("refresh")).findFirst()
-				.orElseThrow(() -> new NoAuthenticatedException("Missing token"));
-
-		String refreshToken = refreshCookie.getValue();
-
-		authService.refresh(refreshToken, res);
-
+		authService.refresh(req, res);
 		return ResponseEntity
 				.status(HttpStatus.OK)
 				.body("Tokens successfully refreshed!");
-	}*/
+	}
 }

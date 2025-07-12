@@ -23,7 +23,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtTokenValidator extends OncePerRequestFilter {
 
-	private final List<String> EXCLUDED_PATHS =List.of("/auth/login", "/auth/register", "/h2-console");
+	private final List<String> EXCLUDED_PATHS =List.of(
+			"/auth/login",
+			"/auth/register",
+			"/auth/refresh",
+			"/h2-console");
 	private final JwtUtils jwtUtils;
 
 	public JwtTokenValidator(JwtUtils jwtUtils) {
@@ -42,8 +46,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		}
 
 		Cookie[] cookies = request.getCookies();
-
-		if(cookies != null && cookies.length > 0) {
+		if(cookies.length > 0) {
 
 			Cookie tokenCookie = Arrays.stream(cookies).filter(c -> c.getName().equals("token"))
 					.findFirst().orElseThrow(() -> new NoAuthenticatedException("Missing access token"));
@@ -71,7 +74,9 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
 			// Continue filter chain
 			filterChain.doFilter(request, response);
+			return;
 		}
+		throw new NoAuthenticatedException("Missing access token");
 	}
 
 

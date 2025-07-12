@@ -15,6 +15,7 @@ public class UserService {
     }
 
     public UserEntity loadByUsername(String username) {
+        System.out.println("USERNAME -> " + username);
         return userRepo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
     }

@@ -38,7 +38,7 @@ public class JwtUtils{
 	}
 
 	public String createToken(Authentication authentication, JwtTokenType type){
-		
+
 		//Get current authenticated user username
 		String username = authentication.getPrincipal().toString();
 		
@@ -73,18 +73,17 @@ public class JwtUtils{
 	}
 
 	public DecodedJWT validateToken(String token, JwtTokenType type){
-		
-		try{
+
+		try {
 			Algorithm algorithm = (type == JwtTokenType.ACCESS ? ACCESS_ALGORITHM : REFRESH_ALGORITHM);
 			JWTVerifier verifier = JWT.require(algorithm)
 							.withIssuer(ISSUER)
 							.build();
-							
 			//Get decoded Jwt token if successful verification
 			return verifier.verify(token);
 			
 		} catch(JWTVerificationException ex){
-			throw new JWTVerificationException("Invalid token. No authenticated: " + ex.getMessage());
+			throw new JWTVerificationException("Invalid token: " + ex.getMessage());
 		}
 	}
 	

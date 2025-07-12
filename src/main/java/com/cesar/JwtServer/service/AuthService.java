@@ -6,7 +6,6 @@ import com.cesar.JwtServer.persistence.entity.JwtTokenType;
 import com.cesar.JwtServer.persistence.entity.RefreshTokenEntity;
 import com.cesar.JwtServer.persistence.entity.RoleEntity;
 import com.cesar.JwtServer.persistence.entity.UserEntity;
-import com.cesar.JwtServer.persistence.repository.RefreshTokenRepository;
 import com.cesar.JwtServer.persistence.repository.UserRepository;
 import com.cesar.JwtServer.presentation.dto.LogInRequest;
 import com.cesar.JwtServer.presentation.dto.SignUpRequest;
@@ -15,8 +14,8 @@ import com.cesar.JwtServer.util.AuthorityUtils;
 import com.cesar.JwtServer.util.JwtUtils;
 import com.cesar.JwtServer.util.UserUtils;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,8 +25,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Console;
+import java.util.Arrays;
 import java.util.Set;
 
 @Service
@@ -36,7 +35,6 @@ public class AuthService {
     private final UserDetailServiceImpl userDetailService;
     private final UserRepository userRepo;
     private final UserService userService;
-    private final RefreshTokenRepository refreshTokenRepo;
     private final UserUtils userUtils;
     private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -45,13 +43,12 @@ public class AuthService {
     private final int TOKEN_COOKIE_EXPIRATION_TIME;
 
     public AuthService(UserDetailServiceImpl userDetailService, UserRepository userRepo,
-                       UserService userService, RefreshTokenRepository refreshTokenRepo,
-                       UserUtils userUtils, JwtUtils jwtUtils, AuthorityUtils authorityUtils,
+                       UserService userService, UserUtils userUtils, JwtUtils jwtUtils,
+                       AuthorityUtils authorityUtils,
                        @Value("${jwt.cookie.expirationTime}") int TOKEN_COOKIE_EXPIRATION_TIME){
         this.userDetailService = userDetailService;
         this.userRepo = userRepo;
         this.userService = userService;
-        this.refreshTokenRepo = refreshTokenRepo;
         this.userUtils = userUtils;
         this.jwtUtils = jwtUtils;
         this.authorityUtils = authorityUtils;
@@ -112,33 +109,48 @@ public class AuthService {
                 .build();
     }
 
-    public void refresh(String refreshToken, HttpServletResponse res) {
+    public void refresh(HttpServletRequest req, HttpServletResponse res) {
+
+        // Try to get request cookie with refresh token
+        Cookie[] cookies = req.getCookies();
+
+        Cookie refreshCookie = Arrays.stream(cookies)
+                .filter(c -> c.getName().equals("refresh")).findFirst()
+                .orElseThrow(() -> new NoAuthenticatedException("Missing token"));
+
+        String refreshToken = refreshCookie.getValue();
 
         // Verify refresh token
         DecodedJWT decoded = jwtUtils.validateToken(refreshToken, JwtTokenType.REFRESH);
 
-        // Get auth context
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // Find user
+        String username = jwtUtils.extractUsername(decoded);
+        UserEntity foundUser = userService.loadByUsername(username);
 
-        if(auth.isAuthenticated()) {
+        // Authenticate
+        Authentication auth = authenticateByUserEntity(foundUser);
 
-            // Rotate (update/refresh) tokens
-            String token = jwtUtils.createToken(auth, JwtTokenType.ACCESS);
-            String refresh = jwtUtils.createToken(auth, JwtTokenType.REFRESH);
+        // Rotate (update/refresh) tokens
+        String token = jwtUtils.createToken(auth, JwtTokenType.ACCESS);
+        String refresh = jwtUtils.createToken(auth, JwtTokenType.REFRESH);
 
-            // Load tokens in cookies
-            Cookie tokenCookie = new Cookie("token", token);
-            tokenCookie.setHttpOnly(true);
-            tokenCookie.setSecure(true);
-            tokenCookie.setMaxAge(TOKEN_COOKIE_EXPIRATION_TIME);
-            res.addCookie(tokenCookie);
+        // Save refresh token for user in DB
+        foundUser.setRefreshToken(new RefreshTokenEntity(refresh));
+        UserEntity updatedUser = userRepo.save(foundUser);
+        System.out.println("UPDATED USER -> " + updatedUser.getUsername());
 
-            Cookie refreshCookie = new Cookie("refresh", refresh);
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
-            refreshCookie.setMaxAge(TOKEN_COOKIE_EXPIRATION_TIME);
-            res.addCookie(refreshCookie);
-        }
+        // Load tokens in cookies
+        Cookie tokenCookie = new Cookie("token", token);
+        tokenCookie.setHttpOnly(true);
+        tokenCookie.setSecure(true);
+        tokenCookie.setMaxAge(TOKEN_COOKIE_EXPIRATION_TIME);
+        res.addCookie(tokenCookie);
+
+        Cookie newRefreshCookie = new Cookie("refresh", refresh);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setMaxAge(TOKEN_COOKIE_EXPIRATION_TIME);
+        res.addCookie(newRefreshCookie);
     }
 
     private Authentication authenticateByUsernameAndPassword(UserEntity userEntity, String username, String password){
@@ -157,5 +169,16 @@ public class AuthService {
         }
 
         throw new BadCredentialsException("Invalid username or password");
+    }
+
+    private Authentication authenticateByUserEntity(UserEntity userEntity){
+
+        //Authenticate user in Security context
+        UserDetails user = userDetailService.mapUserEntityToUserDetails(userEntity);
+
+        Authentication authentication = new
+                UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return authentication;
     }
 }
