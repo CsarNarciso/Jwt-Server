@@ -30,20 +30,22 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http.csrf(c -> c.disable()).httpBasic(Customizer.withDefaults())
+		return http
+				.cors(c -> c.disable())
+				.csrf(c -> c.disable()).httpBasic(Customizer.withDefaults())
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(request -> {
 
 					// Resource operations
-					request.requestMatchers(HttpMethod.GET, "/resource/get").hasAuthority(PermissionEnum.READ.name());
+					request.requestMatchers(HttpMethod.GET, "/resource").hasAuthority(PermissionEnum.READ.name());
 
-					request.requestMatchers(HttpMethod.POST, "/resource/post").hasAuthority(PermissionEnum.WRITE.name());
+					request.requestMatchers(HttpMethod.POST, "/resource").hasAuthority(PermissionEnum.WRITE.name());
 
-					request.requestMatchers(HttpMethod.PUT, "/resource/put").hasRole(RoleEnum.ADMIN.name());
+					request.requestMatchers(HttpMethod.PUT, "/resource").hasRole(RoleEnum.ADMIN.name());
 
-					request.requestMatchers(HttpMethod.PATCH, "/resource/patch").hasRole(RoleEnum.ADMIN.name());
+					request.requestMatchers(HttpMethod.PATCH, "/resource").hasRole(RoleEnum.ADMIN.name());
 
-					request.requestMatchers(HttpMethod.DELETE, "/resource/delete").hasRole(RoleEnum.ADMIN.name());
+					request.requestMatchers(HttpMethod.DELETE, "/resource").hasRole(RoleEnum.ADMIN.name());
 
 					// For auth operations
 					request.anyRequest().permitAll();

@@ -1,39 +1,33 @@
 package com.cesar.JwtServer.presentation;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/resource")
 public class ResourceController{
 	
-	@GetMapping("/get")
+	@GetMapping
 	public ResponseEntity<?> get(){
 		return ResponseEntity.ok("GET");
 	}
 	
-	@PostMapping("/post")
+	@PostMapping
 	public ResponseEntity<?> post(){
 		return ResponseEntity.ok("POST");
 	}
 	
-	@PutMapping("/put")
+	@PutMapping
 	public ResponseEntity<?> put(){
 		return ResponseEntity.ok("PUT");
 	}
 	
-	@PatchMapping("/patch")
+	@PatchMapping
 	public ResponseEntity<?> patch(){
 		return ResponseEntity.ok("PATCH");
 	}
 	
-	@DeleteMapping("/delete")
+	@DeleteMapping
 	public ResponseEntity<?> delete(){
 		return ResponseEntity.ok("DELETE");
 	}
