@@ -4,28 +4,45 @@ function App() {
 
   const baseUrl = 'http://localhost:9090';
 
-  const login = () => {
-    fetch(`${baseUrl}/auth/login`, {
+
+  const login = async () => {
+    
+    const response = await fetch(`${baseUrl}/auth/login`, {
+      credentials: 'include',
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         username: "user",
         password: "password"
       })
     });
+
+    const data = await response.json();
+    console.log(data);
   }
 
-  const getResource = () => {
-    fetch(`${baseUrl}/resource`, {
+  const getResource = async () => {
+    
+    const response = await fetch(`${baseUrl}/resource`, {
       credentials: 'include',
       method: 'GET'
     });
+
+    const data = await response.json();
+    console.log(data);
   }
 
-  const postResource = () => {
-    fetch(`${baseUrl}/resource`, {
+  const postResource = async () => {
+    
+    const response = await fetch(`${baseUrl}/resource`, {
       credentials: 'include',
       method: 'POST'
     });
+
+    const data = await response.json();
+    console.log(data);
   }
 
   return (
