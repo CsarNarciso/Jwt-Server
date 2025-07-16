@@ -22,16 +22,29 @@ import com.cesar.JwtServer.persistence.entity.RoleEnum;
 import com.cesar.JwtServer.security.filter.JwtTokenValidator;
 import com.cesar.JwtServer.service.UserDetailServiceImpl;
 import com.cesar.JwtServer.util.JwtUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+	private final JwtUtils jwtUtils;
+
+	public SecurityConfig(JwtUtils jwtUtils) {
+		this.jwtUtils = jwtUtils;
+	}
+
+
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
-				.cors(c -> c.disable())
+				.cors(Customizer.withDefaults())
 				.csrf(c -> c.disable()).httpBasic(Customizer.withDefaults())
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(request -> {
@@ -72,9 +85,16 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-	public SecurityConfig(JwtUtils jwtUtils) {
-		this.jwtUtils = jwtUtils;
-	}
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
+		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowCredentials(true); // Allow sending credentials (e.g., cookies)
 
-	private final JwtUtils jwtUtils;
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration); // Apply to all paths
+		return source;
+	}
 }

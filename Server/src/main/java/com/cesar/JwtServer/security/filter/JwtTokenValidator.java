@@ -46,7 +46,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		}
 
 		Cookie[] cookies = request.getCookies();
-		if(cookies.length > 0) {
+		if(cookies != null && cookies.length > 0) {
 
 			Cookie tokenCookie = Arrays.stream(cookies).filter(c -> c.getName().equals("token"))
 					.findFirst().orElseThrow(() -> new NoAuthenticatedException("Missing access token"));
