@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
 import com.cesar.JwtServer.exception.NoAuthenticatedException;
 import com.cesar.JwtServer.persistence.entity.JwtTokenType;
 import jakarta.servlet.http.Cookie;
@@ -20,6 +21,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 public class JwtTokenValidator extends OncePerRequestFilter {
 
@@ -29,9 +31,11 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 			"/auth/refresh",
 			"/h2-console");
 	private final JwtUtils jwtUtils;
+	private final HandlerExceptionResolver handlerExceptionResolver;
 
-	public JwtTokenValidator(JwtUtils jwtUtils) {
+	public JwtTokenValidator(JwtUtils jwtUtils, HandlerExceptionResolver handlerExceptionResolver) {
 		this.jwtUtils = jwtUtils;
+		this.handlerExceptionResolver = handlerExceptionResolver;
 	}
 
 
@@ -54,7 +58,13 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 			String jwtToken = tokenCookie.getValue();
 
 			// Validate token (break point here: if not valid, it will throw exception)
-			DecodedJWT decodedToken = jwtUtils.validateToken(jwtToken, JwtTokenType.ACCESS);
+			DecodedJWT decodedToken = null;
+			try {
+				decodedToken = jwtUtils.validateToken(jwtToken, JwtTokenType.ACCESS);
+			} catch (Exception ex) {
+				handlerExceptionResolver.resolveException(request, response, null, ex);
+				return;
+			}
 
 			// If valid
 			String username = jwtUtils.extractUsername(decodedToken);
@@ -76,7 +86,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		throw new NoAuthenticatedException("Missing access token");
+		handlerExceptionResolver.resolveException(request, response, null, new NoAuthenticatedException("Missing access token"));
 	}
 
 

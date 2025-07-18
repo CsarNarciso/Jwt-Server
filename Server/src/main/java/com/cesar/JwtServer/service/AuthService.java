@@ -17,6 +17,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -78,17 +80,8 @@ public class AuthService {
         userRepo.save(foundUser);
 
         // Load tokens in cookies
-        Cookie tokenCookie = new Cookie("token", token);
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setSecure(true);
-        tokenCookie.setMaxAge(TOKEN_COOKIE_EXPIRATION_TIME);
-        res.addCookie(tokenCookie);
-
-        Cookie refreshCookie = new Cookie("refresh", refresh);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        refreshCookie.setMaxAge(TOKEN_COOKIE_EXPIRATION_TIME);
-        res.addCookie(refreshCookie);
+        generateResponseTokenCookie(res, "token", token);
+        generateResponseTokenCookie(res, "refresh", refresh);
     }
 
     public SignUpResponse signup(SignUpRequest signupRequest){
@@ -180,5 +173,16 @@ public class AuthService {
                 UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return authentication;
+    }
+
+    private void generateResponseTokenCookie(HttpServletResponse res, String cookieName, String token) {
+        ResponseCookie cookie = ResponseCookie.from(cookieName, token)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(TOKEN_COOKIE_EXPIRATION_TIME)
+                .build();
+        res.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

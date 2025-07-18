@@ -25,6 +25,7 @@ import com.cesar.JwtServer.util.JwtUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +36,11 @@ import java.util.List;
 public class SecurityConfig {
 
 	private final JwtUtils jwtUtils;
+	private final HandlerExceptionResolver handlerExceptionResolver;
 
-	public SecurityConfig(JwtUtils jwtUtils) {
+	public SecurityConfig(JwtUtils jwtUtils, HandlerExceptionResolver handlerExceptionResolver) {
 		this.jwtUtils = jwtUtils;
+		this.handlerExceptionResolver = handlerExceptionResolver;
 	}
 
 
@@ -63,7 +66,7 @@ public class SecurityConfig {
 					// For auth operations
 					request.anyRequest().permitAll();
 
-				}).addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class).build();
+				}).addFilterBefore(new JwtTokenValidator(jwtUtils, handlerExceptionResolver), BasicAuthenticationFilter.class).build();
 	}
 
 	@Bean
